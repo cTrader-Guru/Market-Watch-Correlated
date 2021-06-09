@@ -69,7 +69,8 @@ namespace cAlgo
             for (int i = MyBars.ClosePrices.Count - 1; i >= 0; i--)
             {
 
-                if (MyTime == MyBars.OpenTimes[i]) return i;
+                if (MyTime == MyBars.OpenTimes[i])
+                    return i;
 
             }
 
@@ -237,7 +238,7 @@ namespace cAlgo
         #endregion
 
         #region Identity
-        
+
         /// <summary>
         /// Nome del prodotto, identificativo, da modificare con il nome della propria creazione
         /// </summary>
@@ -246,7 +247,7 @@ namespace cAlgo
         /// <summary>
         /// La versione del prodotto, progressivo, utilie per controllare gli aggiornamenti se viene reso disponibile sul sito ctrader.guru
         /// </summary>
-        public const string VERSION = "1.0.1";
+        public const string VERSION = "1.0.2";
 
         #endregion
 
@@ -301,7 +302,8 @@ namespace cAlgo
             if (!Symbols.Exists(MySymbol))
             {
 
-                if (CanDraw) Chart.DrawStaticText("Error", NAME + " : PLEASE SET VALID CROSS LIKE 'EURUSD'", VerticalAlignment.Center, HorizontalAlignment.Center, Color.Red);
+                if (CanDraw)
+                    Chart.DrawStaticText("Error", NAME + " : PLEASE SET VALID CROSS LIKE 'EURUSD'", VerticalAlignment.Center, HorizontalAlignment.Center, Color.Red);
 
                 ItsOk = false;
 
@@ -317,7 +319,8 @@ namespace cAlgo
         {
 
             // --> Si esce se non ci sono le condizioni per continuare
-            if (!ItsOk) return;
+            if (!ItsOk)
+                return;
 
 
             Symbol CROSS = Symbols.GetSymbol(MySymbol);
@@ -325,7 +328,8 @@ namespace cAlgo
 
             // --> Potrei avere un indice diverso perchè non carico le stesse barre
             int CROSS_Index = CROSS_Bars.GetIndexByDate(Bars.OpenTimes[index]);
-            if (CROSS_Index < 0) return;
+            if (CROSS_Index < 0)
+                return;
 
             ExponentialMovingAverage CROSS_ema = Indicators.ExponentialMovingAverage(CROSS_Bars.ClosePrices, MyEMAPeriod);
             ExponentialMovingAverage Current_CROSS_ema = Indicators.ExponentialMovingAverage(Bars.ClosePrices, MyEMAPeriod);
@@ -341,8 +345,13 @@ namespace cAlgo
 
             string CROSStext = string.Format("  ‹ {0} {1:0.00} ( {2:0.00000} )", CROSS.Name, CROSSpips, CROSS_Bars.ClosePrices[CROSS_Index]);
 
-            if (CanDraw) Chart.DrawText(CROSS.Name, CROSStext, index, Result[index], Color.FromName( LabelColor.ToString() ) );
+            if (CanDraw)
+            {
 
+                ChartText ThisLabel = Chart.DrawText(CROSS.Name, CROSStext, index, Result[index], Color.FromName(LabelColor.ToString()));
+                ThisLabel.VerticalAlignment = VerticalAlignment.Center;
+
+            }
         }
 
         #endregion
