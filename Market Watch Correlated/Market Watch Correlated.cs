@@ -17,20 +17,12 @@ using cAlgo.API.Internals;
 namespace cAlgo
 {
 
-    // --> Estensioni che rendono il codice più leggibile
+
     #region Extensions
 
-    /// <summary>
-    /// Estensione che fornisce metodi aggiuntivi per il simbolo
-    /// </summary>
     public static class SymbolExtensions
     {
 
-        /// <summary>
-        /// Converte il numero di pips corrente da digits a double
-        /// </summary>
-        /// <param name="Pips">Il numero di pips nel formato Digits</param>
-        /// <returns></returns>
         public static double DigitsToPips(this Symbol MySymbol, double Pips)
         {
 
@@ -38,11 +30,6 @@ namespace cAlgo
 
         }
 
-        /// <summary>
-        /// Converte il numero di pips corrente da double a digits
-        /// </summary>
-        /// <param name="Pips">Il numero di pips nel formato Double (2)</param>
-        /// <returns></returns>
         public static double PipsToDigits(this Symbol MySymbol, double Pips)
         {
 
@@ -52,17 +39,9 @@ namespace cAlgo
 
     }
 
-    /// <summary>
-    /// Estensione che fornisce metodi aggiuntivi per le Bars
-    /// </summary>
     public static class BarsExtensions
     {
 
-        /// <summary>
-        /// Converte l'indice di una bar partendo dalla data di apertura
-        /// </summary>
-        /// <param name="MyTime">La data e l'ora di apertura della candela</param>
-        /// <returns></returns>
         public static int GetIndexByDate(this Bars MyBars, DateTime MyTime)
         {
 
@@ -239,31 +218,22 @@ namespace cAlgo
 
         #region Identity
 
-        /// <summary>
-        /// Nome del prodotto, identificativo, da modificare con il nome della propria creazione
-        /// </summary>
         public const string NAME = "Market Watch Correlated";
 
-        /// <summary>
-        /// La versione del prodotto, progressivo, utilie per controllare gli aggiornamenti se viene reso disponibile sul sito ctrader.guru
-        /// </summary>
         public const string VERSION = "1.0.2";
 
         #endregion
 
         #region Params
 
-        /// <summary>
-        /// Identità del prodotto nel contesto di ctrader.guru
-        /// </summary>
-        [Parameter(NAME + " " + VERSION, Group = "Identity", DefaultValue = "https://ctrader.guru/product/market-watch-correlated/")]
+        [Parameter(NAME + " " + VERSION, Group = "Identity", DefaultValue = "https://www.google.com/search?q=ctrader+guru+market+watch+correlated")]
         public string ProductInfo { get; set; }
 
-        [Parameter("Symbol", Group = "Params", DefaultValue = "EURUSD")]
-        public string MySymbol { get; set; }
+        [Parameter("Correlated", Group = "Symbol", DefaultValue = "EURUSD")]
+        public string CorrelatedSymbol { get; set; }
 
-        [Parameter("EMA Period", Group = "Params", DefaultValue = 500)]
-        public int MyEMAPeriod { get; set; }
+        [Parameter("Period", Group = "EMA", DefaultValue = 500)]
+        public int EMAPeriod { get; set; }
 
         [Parameter("Show Labels ?", Group = "Styles", DefaultValue = true)]
         public bool ShowLabel { get; set; }
@@ -285,21 +255,15 @@ namespace cAlgo
 
         #region Indicator Events
 
-        /// <summary>
-        /// Viene generato all'avvio dell'indicatore, si inizializza l'indicatore
-        /// </summary>
         protected override void Initialize()
         {
 
-            // --> Stampo nei log la versione corrente
             Print("{0} : {1}", NAME, VERSION);
 
-            // --> Alcuni controlli di base
-            MySymbol = MySymbol.Trim().ToUpper();
+            CorrelatedSymbol = CorrelatedSymbol.Trim().ToUpper();
             CanDraw = (RunningMode == RunningMode.RealTime || RunningMode == RunningMode.VisualBacktesting);
 
-            // --> L'utente ha inserito un cross valido ?
-            if (!Symbols.Exists(MySymbol))
+            if (!Symbols.Exists(CorrelatedSymbol))
             {
 
                 if (CanDraw)
@@ -311,33 +275,24 @@ namespace cAlgo
 
         }
 
-        /// <summary>
-        /// Generato ad ogni tick, vengono effettuati i calcoli dell'indicatore
-        /// </summary>
-        /// <param name="index">L'indice della candela in elaborazione</param>
         public override void Calculate(int index)
         {
 
-            // --> Si esce se non ci sono le condizioni per continuare
             if (!ItsOk)
                 return;
 
 
-            Symbol CROSS = Symbols.GetSymbol(MySymbol);
+            Symbol CROSS = Symbols.GetSymbol(CorrelatedSymbol);
             Bars CROSS_Bars = MarketData.GetBars(TimeFrame, CROSS.Name);
 
-            // --> Potrei avere un indice diverso perchè non carico le stesse barre
             int CROSS_Index = CROSS_Bars.GetIndexByDate(Bars.OpenTimes[index]);
             if (CROSS_Index < 0)
                 return;
 
-            ExponentialMovingAverage CROSS_ema = Indicators.ExponentialMovingAverage(CROSS_Bars.ClosePrices, MyEMAPeriod);
-            ExponentialMovingAverage Current_CROSS_ema = Indicators.ExponentialMovingAverage(Bars.ClosePrices, MyEMAPeriod);
+            ExponentialMovingAverage CROSS_ema = Indicators.ExponentialMovingAverage(CROSS_Bars.ClosePrices, EMAPeriod);
+            ExponentialMovingAverage Current_CROSS_ema = Indicators.ExponentialMovingAverage(Bars.ClosePrices, EMAPeriod);
 
-            double CROSSpips = 0;
-
-            // --> Devo uniformare il numero di pips, i digits saranno di sicuro diversi
-            CROSSpips = CROSS.DigitsToPips(Math.Round(CROSS_Bars.ClosePrices[CROSS_Index] - CROSS_ema.Result[CROSS_Index], CROSS.Digits));
+            double CROSSpips = CROSS.DigitsToPips(Math.Round(CROSS_Bars.ClosePrices[CROSS_Index] - CROSS_ema.Result[CROSS_Index], CROSS.Digits));
             Result[index] = Math.Round(Current_CROSS_ema.Result[index] + Symbol.PipsToDigits(CROSSpips), Symbol.Digits);
 
             if (!ShowLabel)
@@ -353,12 +308,6 @@ namespace cAlgo
 
             }
         }
-
-        #endregion
-
-        #region Private Methods
-
-
 
         #endregion
 

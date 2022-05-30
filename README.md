@@ -1,4 +1,4 @@
 # Market Watch Correlated
-Il modo più semplice per visualizzare più strumenti sullo stesso grafico
 
-[Pagina ufficiale](https://ctrader.guru/product/market-watch-correlated/)
+
+[Find more indicators, cbots and tools](https://ctrader-guru.github.io)
